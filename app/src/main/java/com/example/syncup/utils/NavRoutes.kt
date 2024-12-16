@@ -15,5 +15,8 @@ object NavRoutes {
         }
 
         data object ProfileScreen : Destination("profile_screen")
+        data object DetailImageScreen : Destination("image_screen/{image}") {
+            fun createImageRoute(image: String) = "image_screen/$image"
+        }
     }
 }

@@ -17,7 +17,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -45,12 +44,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import com.example.syncup.R
 import com.example.syncup.auth.signup.TopSection
 import com.example.syncup.ui.theme.PurpleAppColor
 import com.example.syncup.ui.theme.SkyAppColor
-import com.example.syncup.utils.LoadingIndicator
+import com.example.syncup.utils.CustomCircularProgressBar
 import com.example.syncup.utils.NavRoutes
 import com.example.syncup.utils.ResultState
 
@@ -61,7 +59,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
 
-    val state = viewModel.signIpState.collectAsState()
+    val state = viewModel.signInState.collectAsState()
     var showLoadingIndicator by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -261,7 +259,7 @@ fun LoginScreen(
 
 
     if (showLoadingIndicator == true) {
-        LoadingIndicator()
+        CustomCircularProgressBar()
     }
 
 }

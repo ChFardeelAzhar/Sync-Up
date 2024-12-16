@@ -19,8 +19,8 @@ class LoginViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-    private var _signIpState = MutableStateFlow<ResultState<String>>(ResultState.Idle)
-    val signIpState: StateFlow<ResultState<String>> = _signIpState
+    private var _signInState = MutableStateFlow<ResultState<String>>(ResultState.Idle)
+    val signInState: StateFlow<ResultState<String>> = _signInState
 
     private val currentUserData = mutableStateOf<UserData?>(null)
 
@@ -28,12 +28,12 @@ class LoginViewModel @Inject constructor(
         email: String,
         password: String
     ) {
-        _signIpState.value = ResultState.Loading
+        _signInState.value = ResultState.Loading
 
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
 
-                _signIpState.value = ResultState.Success("Sign In successfully")
+                _signInState.value = ResultState.Success("Sign In successfully")
 
                 auth.currentUser?.uid?.let {
                     getUserById(it)
@@ -41,7 +41,7 @@ class LoginViewModel @Inject constructor(
 
             }
         }.addOnFailureListener {
-            _signIpState.value = ResultState.Failure(it)
+            _signInState.value = ResultState.Failure(it)
         }
 
     }
@@ -71,16 +71,16 @@ class LoginViewModel @Inject constructor(
                 } else {
                     db.collection("user").document(uid).set(user)
                         .addOnCompleteListener {
-                            _signIpState.value = ResultState.Success("Profile created")
+                            _signInState.value = ResultState.Success("Profile created")
                             getUserById(uid)
                         }
                         .addOnFailureListener { exception ->
-                            _signIpState.value = ResultState.Failure(exception)
+                            _signInState.value = ResultState.Failure(exception)
                         }
                 }
 
             }.addOnFailureListener {
-                _signIpState.value = ResultState.Failure(it)
+                _signInState.value = ResultState.Failure(it)
             }
 
         }

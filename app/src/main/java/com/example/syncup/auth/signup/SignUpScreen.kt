@@ -5,14 +5,12 @@ import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,13 +18,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -53,10 +49,9 @@ import androidx.navigation.NavController
 import com.example.syncup.R
 import com.example.syncup.ui.theme.PurpleAppColor
 import com.example.syncup.ui.theme.SkyAppColor
-import com.example.syncup.utils.LoadingIndicator
+import com.example.syncup.utils.CustomCircularProgressBar
 import com.example.syncup.utils.NavRoutes
 import com.example.syncup.utils.ResultState
-import kotlin.math.sign
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -74,6 +69,7 @@ fun SignUpScreen(
 
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -302,7 +298,7 @@ fun SignUpScreen(
 
 
     if (showLoadingIndicator == true) {
-        LoadingIndicator()
+        CustomCircularProgressBar()
     }
 
 

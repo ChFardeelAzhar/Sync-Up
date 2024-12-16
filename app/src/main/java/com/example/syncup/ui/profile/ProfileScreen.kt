@@ -1,8 +1,13 @@
 package com.example.syncup.ui.profile
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.util.Patterns
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,8 +44,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +59,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -59,6 +69,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
 import com.example.syncup.R
 import com.example.syncup.auth.AuthViewModel
 import com.example.syncup.auth.login.LoginScreen
@@ -66,17 +78,42 @@ import com.example.syncup.ui.navbar.BottomBarItemData
 import com.example.syncup.ui.navbar.BottomNavigationBar
 import com.example.syncup.ui.theme.PurpleAppColor
 import com.example.syncup.ui.theme.SkyAppColor
+import com.example.syncup.utils.CustomCircularProgressBar
 import com.example.syncup.utils.NavRoutes
+import com.example.syncup.utils.ResultState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    viewModel: AuthViewModel = hiltViewModel()
+    viewModel: ProfileScreenViewModel = hiltViewModel(),
+    onLogOutClick: () -> Unit
 ) {
 
+
+    val state = viewModel.profileState.collectAsState()
     val userData by viewModel.currentUserData.collectAsState()
+    var currentImageUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+            currentImageUri = uri
+        }
+
+    val name = remember { mutableStateOf("") }
+    val number = remember { mutableStateOf("") }
+    var profileBio = remember { mutableStateOf("") }
+    val showNameDialog = remember { mutableStateOf(false) }
+    val showNumberDialog = remember { mutableStateOf(false) }
+    val showProfileDialog = remember { mutableStateOf(false) }
+
+    LaunchedEffect(userData) {
+        name.value = userData?.name ?: ""
+        number.value = userData?.number ?: ""
+        profileBio.value = userData?.profileBio ?: ""
+    }
 
     Scaffold(
         topBar = {
@@ -111,57 +148,8 @@ fun ProfileScreen(
                         .fillMaxWidth(),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = .9f),
                 )
-            }
-        },
-        bottomBar = {
-
-            val backStackEntry = navController.currentBackStackEntryAsState()
-            val isHomeSelected =
-                NavRoutes.Destination.ChatListScreen.route == backStackEntry.value?.destination?.route
-            val isStatusSelected =
-                NavRoutes.Destination.StatusScreen.route == backStackEntry.value?.destination?.route
-            val isProfileSelected =
-                NavRoutes.Destination.ProfileScreen.route == backStackEntry.value?.destination?.route
-
-
-            val listItems = listOf<BottomBarItemData>(
-                BottomBarItemData(
-                    title = "Chats",
-                    route = NavRoutes.Destination.ChatListScreen.route,
-                    image = if (isHomeSelected) R.drawable.filled_chat else R.drawable.chat
-                ),
-                BottomBarItemData(
-                    title = "Updates",
-                    route = NavRoutes.Destination.StatusScreen.route,
-                    image = if (isStatusSelected) R.drawable.filled_status else R.drawable.status
-                ),
-                BottomBarItemData(
-                    title = "Profile",
-                    route = NavRoutes.Destination.ProfileScreen.route,
-                    image = if (isProfileSelected) R.drawable.filled_profile else R.drawable.profile
-                ),
-            )
-
-
-            /*
-            BottomAppBar(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp)
-                    .height(100.dp),
-            ) {
-
-                BottomNavigationBar(
-                    navController,
-                    listItems,
-                    onItemClick = { navController.navigate(it.route) }
-                )
 
             }
-
-
-             */
-
         }
 
     ) { paddingValue ->
@@ -173,9 +161,7 @@ fun ProfileScreen(
                 .padding(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
-        )
-        {
-
+        ) {
 
             Box(contentAlignment = Alignment.BottomEnd) {
 
@@ -190,8 +176,12 @@ fun ProfileScreen(
 
                         },
                 ) {
+
+                    val painter: Painter =
+                        rememberAsyncImagePainter(currentImageUri ?: userData?.imageUrl.toString())
+
                     Image(
-                        painter = painterResource(R.drawable.app_icons),
+                        painter = painter,
                         contentDescription = null,
                         modifier = Modifier
                             .clip(
@@ -199,7 +189,7 @@ fun ProfileScreen(
                             )
                             .size(150.dp)
                             .clickable {
-
+                                launcher.launch("image/*")
                             },
                         contentScale = ContentScale.Crop,
                         alignment = Alignment.Center
@@ -221,30 +211,48 @@ fun ProfileScreen(
                         )
                         .padding(10.dp)
                         .clickable {
+//                            launcher.launch("image/*")
+                            currentImageUri?.let {
 
+                                viewModel.updateProfile(
+                                    context = context,
+                                    imageUrl = it.toString(),
+                                    name = userData?.name,
+                                    number = userData?.number,
+                                    profileBio = userData?.profileBio
+                                )
+                            }
                         },
                     colorFilter = ColorFilter.tint(Color.White)
                 )
             }
 
-
             Spacer(modifier = Modifier.size(25.dp))
 
             SingleDescriptionItem(
                 icon = Icons.Outlined.Person,
+                onEditIconClick = {
+                    showNameDialog.value = true
+                },
                 label = "${userData?.name}",
                 type = "Name"
             )
 
             SingleDescriptionItem(
                 icon = Icons.Outlined.Info,
-                label = "Winners Never Quit Fk.",
+                onEditIconClick = {
+                    showProfileDialog.value = true
+                },
+                label = "${userData?.profileBio}",
                 type = "About"
             )
 
 
             SingleDescriptionItem(
                 icon = Icons.Outlined.Phone,
+                onEditIconClick = {
+                    showNumberDialog.value = true
+                },
                 label = "${userData?.number}",
                 type = "Phone"
             )
@@ -253,10 +261,7 @@ fun ProfileScreen(
 
             Button(
                 onClick = {
-                    viewModel.logOut()
-                    navController.navigate(NavRoutes.Destination.Login.route) {
-                        popUpTo(0)
-                    }
+                    onLogOutClick()
                 },
                 modifier = Modifier
                     .background(
@@ -279,6 +284,63 @@ fun ProfileScreen(
         }
     }
 
+    when (val value = state.value) {
+        is ResultState.Success -> {
+            Toast.makeText(context, value.data, Toast.LENGTH_SHORT).show()
+        }
+
+        is ResultState.Failure -> {
+            Toast.makeText(context, "${value.error.message}", Toast.LENGTH_SHORT).show()
+        }
+
+        ResultState.Loading -> {
+            CustomCircularProgressBar()
+        }
+
+        ResultState.Idle -> {
+
+        }
+    }
+
+    if (showNameDialog.value) {
+        ShowDialogForInfoUpdate(
+            userInfo = name,
+            showDialog = showNameDialog,
+            onSaveClick = {
+                viewModel.updateProfile(
+                    context = context,
+                    name = name.value
+                )
+            }
+        )
+    }
+
+    if (showProfileDialog.value) {
+        ShowDialogForInfoUpdate(
+            userInfo = profileBio,
+            showDialog = showProfileDialog,
+            onSaveClick = {
+                viewModel.updateProfile(
+                    context = context,
+                    profileBio = profileBio.value
+                )
+            }
+        )
+    }
+
+    if (showNumberDialog.value) {
+        ShowDialogForInfoUpdate(
+            userInfo = number,
+            showDialog = showNumberDialog,
+            onSaveClick = {
+                viewModel.updateProfile(
+                    context = context,
+                    number = number.value
+                )
+            }
+        )
+    }
+
 
 }
 
@@ -286,6 +348,7 @@ fun ProfileScreen(
 @Composable
 fun SingleDescriptionItem(
     icon: ImageVector,
+    onEditIconClick: () -> Unit,
     label: String,
     type: String
 ) {
@@ -305,7 +368,11 @@ fun SingleDescriptionItem(
                         alpha = .5f
                     )
                 ),
-                modifier = Modifier.padding(start = 8.dp, end = 16.dp)
+                modifier = Modifier
+                    .padding(start = 8.dp, end = 16.dp)
+                    .clickable {
+                        onEditIconClick()
+                    }
             )
 
             Column(
@@ -344,7 +411,11 @@ fun SingleDescriptionItem(
             imageVector = Icons.Filled.Edit,
             contentDescription = null,
             colorFilter = ColorFilter.tint(SkyAppColor),
-            modifier = Modifier.padding(top = 10.dp, end = 16.dp)
+            modifier = Modifier
+                .padding(top = 10.dp, end = 16.dp)
+                .clickable {
+                    onEditIconClick()
+                }
         )
     }
 

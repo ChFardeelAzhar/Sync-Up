@@ -6,25 +6,30 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil3.compose.AsyncImage
 import com.example.syncup.models.UserData
 import com.example.syncup.ui.theme.PurpleAppColor
 import com.example.syncup.ui.theme.SkyAppColor
@@ -34,7 +39,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import java.text.SimpleDateFormat
+import java.util.*
 
 fun navigateTo(navController: NavController, route: String) {
     navController.navigate(route) {
@@ -57,13 +63,15 @@ fun LoadingIndicatorSimple(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun LoadingIndicator(modifier: Modifier = Modifier) {
+fun CustomCircularProgressBar(modifier: Modifier = Modifier) {
+
     val infiniteTransition = rememberInfiniteTransition(label = "")
+
     val angle by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1000, easing = LinearEasing)
+            animation = tween(durationMillis = 1500, easing = LinearEasing)
         ), label = ""
     )
 
@@ -147,4 +155,29 @@ fun getUserById(uid: String) {
             ResultState.Failure(error) // _signUpState <- assign this failure to
         }
     }
+}
+
+
+fun getCurrentTime(date: Long): String {
+    val format = SimpleDateFormat("hh:mm:ss ", Locale.getDefault())
+    format.timeZone = TimeZone.getTimeZone("Asia/Karachi") // Set the time zone to Pakistan
+    return format.format(date) // Format the current date and time
+}
+
+@Composable
+fun ImageScreen(imageUrl: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+    }
+
 }

@@ -31,6 +31,7 @@ import com.example.syncup.ui.single_chat.SingleChatScreen
 import com.example.syncup.ui.single_status.SingleStatusScreen
 import com.example.syncup.ui.status.StatusScreen
 import com.example.syncup.ui.theme.SyncUpTheme
+import com.example.syncup.utils.ImageScreen
 import com.example.syncup.utils.NavRoutes
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -77,19 +78,35 @@ fun MainApp(viewModel: AuthViewModel = hiltViewModel()) {
                 SignUpScreen(navController)
             }
             composable(route = NavRoutes.Destination.ProfileScreen.route) {
-                ProfileScreen(navController)
+                ProfileScreen(navController, onLogOutClick = {
+                    viewModel.logOut()
+                    navController.navigate(NavRoutes.Destination.Login.route) {
+                        popUpTo(0)
+                    }
+                })
             }
             composable(route = NavRoutes.Destination.ChatListScreen.route) {
                 ChatListScreen(navController)
             }
             composable(route = NavRoutes.Destination.SingleChatScreen.route) {
-                SingleChatScreen(navController)
+                val id = it.arguments?.getString("id")
+                id?.let { newId ->
+                    SingleChatScreen(navController = navController, chatId = newId)
+                }
             }
+
             composable(route = NavRoutes.Destination.StatusScreen.route) {
                 StatusScreen(navController)
             }
             composable(route = NavRoutes.Destination.SingleStatusScreen.route) {
                 SingleStatusScreen(navController)
+            }
+
+            composable(route = NavRoutes.Destination.DetailImageScreen.route) {
+                val image = it.arguments?.getString("image")
+                image?.let { img ->
+                    ImageScreen(img)
+                }
             }
         }
 

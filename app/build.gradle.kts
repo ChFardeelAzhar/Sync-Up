@@ -3,8 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.dagger.hilt.android")
-    kotlin("kapt")
     alias(libs.plugins.google.gms.google.services)
+    kotlin("kapt")
 
 }
 
@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
+    implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -75,6 +77,8 @@ dependencies {
     // google-icons
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
 
+    // coil
+    implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc02")
 
 }
 
