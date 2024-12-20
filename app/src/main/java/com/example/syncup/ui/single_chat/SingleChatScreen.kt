@@ -1,6 +1,8 @@
 package com.example.syncup.ui.single_chat
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -39,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -46,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.style.TextAlign
@@ -55,10 +59,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.syncup.R
+import com.example.syncup.models.ChatData
 import com.example.syncup.models.Message
-import com.example.syncup.ui.theme.PurpleAppColor
 import com.example.syncup.ui.theme.SkyAppColor
 import com.example.syncup.utils.NavRoutes
+import com.example.syncup.utils.getCurrentTime
+import com.example.syncup.utils.getFormatedDate
 import java.net.URL
 
 
@@ -75,7 +81,7 @@ fun SingleChatScreen(
     val currentChat by viewModel.currentChat.collectAsState()
     val currentUserData by viewModel.currentUserData.collectAsState()
     val chatMessages by viewModel.messageList.collectAsState()
-
+    val context = LocalContext.current
     /*
 
     val chats by viewModel.chats.collectAsState()
@@ -88,6 +94,7 @@ fun SingleChatScreen(
 
 
      */
+
 
     LaunchedEffect(chatId) { // Unit for populate messages
         viewModel.getChatById(chatId)
@@ -102,6 +109,7 @@ fun SingleChatScreen(
     val chatUser =
         if (currentUserData?.id == currentChat?.user1?.id) currentChat?.user2 else currentChat?.user1
 
+
     Scaffold(
         bottomBar = {
             BottomAppBar(
@@ -112,7 +120,10 @@ fun SingleChatScreen(
             ) {
                 ReplyBox(
                     onSendClick = {
-                        viewModel.onSendChat(chatId = chatId, message = messageText.value)
+                        viewModel.onSendChat(
+                            chatId = chatId,
+                            message = messageText.value
+                        )
                         messageText.value = ""
                     },
                     messageText = messageText
@@ -136,7 +147,8 @@ fun SingleChatScreen(
                     navController.navigate(
                         NavRoutes.Destination.DetailImageScreen.createImageRoute(it)
                     )
-                }
+                },
+                context = context
             )
 
             MessagesBox(
@@ -168,8 +180,10 @@ fun CustomTopBar(
     onBackClick: () -> Unit,
     name: String,
     imageUrl: String,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    context: Context
 ) {
+
 
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -194,18 +208,39 @@ fun CustomTopBar(
                     }
             )
 
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = "",
-                modifier = Modifier
-                    .padding(end = 8.dp)
-                    .size(40.dp)
-                    .clip(shape = CircleShape)
-                    .clickable {
-                        onImageClick(imageUrl)
-                    },
-                contentScale = ContentScale.Crop
-            )
+
+            if (imageUrl.isEmpty()) {
+                Image(
+                    painter = painterResource(R.drawable.profile_bg),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(45.dp)
+                        .clip(shape = CircleShape)
+                        .clickable {
+                            Toast
+                                .makeText(context, "No Profile Image", Toast.LENGTH_SHORT)
+                                .show()
+                        },
+
+
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(40.dp)
+                        .clip(shape = CircleShape)
+                        .clickable {
+                            onImageClick(imageUrl)
+                        },
+                    contentScale = ContentScale.Crop
+                )
+            }
+
 
             Text(
                 name,
@@ -238,77 +273,126 @@ fun MessagesBox(messages: List<Message>, currentChatId: String, imageUrl: String
         listState.scrollToItem(messages.size)
     }
 
+    val groupedMessage =
+        messages.groupBy { getFormatedDate(it.timeStamp) }
+
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize()
     ) {
-        items(messages) { msg ->
 
-            val color =
-                if (msg.sendBy == currentChatId) MaterialTheme.colorScheme.onBackground.copy(
-                    alpha = 0.1f
-                ) else SkyAppColor
+        groupedMessage.forEach { (date, message) ->
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-
-                        start = if (msg.sendBy == currentChatId) 5.dp else 65.dp,
-                        top = 5.dp,
-                        bottom = 5.dp,
-                        end = if (msg.sendBy == currentChatId) 65.dp else 5.dp,
-
-                    )
-                    .clickable {
-
-                    },
-                horizontalArrangement = if (msg.sendBy == currentChatId) Arrangement.Start else Arrangement.End,
-                verticalAlignment = Alignment.Top,
-            ) {
-
-                if (msg.sendBy == currentChatId) {
-                    AsyncImage(
-                        model = imageUrl,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .clip(shape = CircleShape)
-                            .size(35.dp),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-
-                Column(
+            item {
+                Row(
                     modifier = Modifier
-                        .wrapContentWidth()
-                        .clip(shape = RoundedCornerShape(12.dp))
-                        .background(color = color)
-                        .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 5.dp),
-                    verticalArrangement = Arrangement.Center,
-
-                    ) {
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
 
                     Text(
-                        text = msg.message.toString(),
-                        color = Color.White,
-                        textAlign = TextAlign.Start
+                        text = date,
+                        modifier = Modifier
+                            .clip(shape = RoundedCornerShape(8.dp))
+                            .background(
+                                color = MaterialTheme.colorScheme.onBackground.copy(
+                                    alpha = 0.3f
+                                )
+                            )
+                            .padding(5.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
-
-                    Text(
-                        text = msg.timeStamp.toString(),
-                        color = Color.White.copy(alpha = 0.7f),
-                        modifier = Modifier.wrapContentWidth(),
-                        textAlign = TextAlign.End,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-
-
                 }
+
             }
 
+            items(message) { msg ->
+
+                val color =
+                    if (msg.sendBy == currentChatId) MaterialTheme.colorScheme.onBackground.copy(
+                        alpha = 0.1f
+                    ) else SkyAppColor
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+
+                            start = if (msg.sendBy == currentChatId) 5.dp else 65.dp,
+                            top = 5.dp,
+                            bottom = 5.dp,
+                            end = if (msg.sendBy == currentChatId) 65.dp else 5.dp,
+
+                            )
+                        .clickable {
+
+                        },
+                    horizontalArrangement = if (msg.sendBy == currentChatId) Arrangement.Start else Arrangement.End,
+                    verticalAlignment = Alignment.Top,
+                ) {
+
+                    if (msg.sendBy == currentChatId) {
+
+                        if (imageUrl.isEmpty()) {
+                            Image(
+                                painter = painterResource(R.drawable.profile_bg),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .clip(shape = CircleShape)
+                                    .size(35.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            AsyncImage(
+                                model = imageUrl,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .clip(shape = CircleShape)
+                                    .size(35.dp),
+                                contentScale = ContentScale.Crop
+
+                            )
+                        }
+
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .clip(shape = RoundedCornerShape(12.dp))
+                            .background(color = color)
+                            .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 5.dp),
+                        verticalArrangement = Arrangement.Center,
+
+                        ) {
+
+                        Text(
+                            text = msg.message.toString(),
+                            color = Color.White,
+                            textAlign = TextAlign.Start
+                        )
+
+                        Text(
+                            text = getCurrentTime(msg.timeStamp!!),
+                            color = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.wrapContentWidth(),
+                            textAlign = TextAlign.End,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+
+
+                    }
+                }
+
+
+            }
 
         }
+
 
     }
 

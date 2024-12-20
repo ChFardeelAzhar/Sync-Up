@@ -36,5 +36,5 @@ data class SingleChatUserDate(
 data class Message(
     val sendBy: String? = "",
     val message: String? = "",
-    val timeStamp: String? = ""
+    val timeStamp: Long? = null
 )

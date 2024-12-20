@@ -3,6 +3,7 @@ package com.example.syncup.ui.chat_list
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.interaction.DragInteraction
@@ -256,19 +257,35 @@ fun SingleChatUser(
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = user.imageUrl,
-            contentDescription = "",
-            modifier = Modifier
-                .padding(end = 5.dp)
-                .size(50.dp)
-                .clip(shape = CircleShape)
-                .clickable {
 
-                },
-            contentScale = ContentScale.Crop
-        )
+        if (user.imageUrl.isNullOrEmpty()) {
+            Image(
+                painter = painterResource(R.drawable.profile_bg),
+                contentDescription = "",
+                modifier = Modifier
+                    .padding(end = 5.dp)
+                    .size(50.dp)
+                    .clip(shape = CircleShape)
+//                    .background(color = MaterialTheme.colorScheme.onBackground, shape = CircleShape)
+                    .clickable {
 
+                    },
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            AsyncImage(
+                model = user.imageUrl,
+                contentDescription = "",
+                modifier = Modifier
+                    .padding(end = 5.dp)
+                    .size(50.dp)
+                    .clip(shape = CircleShape)
+                    .clickable {
+
+                    },
+                contentScale = ContentScale.Crop
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()

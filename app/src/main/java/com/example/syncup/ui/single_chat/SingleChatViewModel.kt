@@ -70,7 +70,8 @@ class SingleChatViewModel @Inject constructor(
 
     fun onSendChat(chatId: String, message: String) {
 
-        val time = getCurrentTime(Calendar.getInstance().time.time)
+        val time = System.currentTimeMillis()
+
 
         val msg = Message(
             sendBy = currentUserData.value?.id,

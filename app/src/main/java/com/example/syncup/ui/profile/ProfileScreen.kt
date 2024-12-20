@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
@@ -180,25 +181,43 @@ fun ProfileScreen(
                     val painter: Painter =
                         rememberAsyncImagePainter(currentImageUri ?: userData?.imageUrl.toString())
 
-                    Image(
-                        painter = painter,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clip(
-                                CircleShape
-                            )
-                            .size(150.dp)
-                            .clickable {
-                                launcher.launch("image/*")
-                            },
-                        contentScale = ContentScale.Crop,
-                        alignment = Alignment.Center
-                    )
+                    if (userData?.imageUrl.isNullOrEmpty()) {
+
+                        Image(
+                            painter = painterResource(R.drawable.profile_bg),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(
+                                    CircleShape
+                                )
+                                .clickable {
+                                    launcher.launch("image/*")
+                                },
+                            contentScale = ContentScale.Crop,
+                            alignment = Alignment.Center
+                        )
+                    } else {
+                        Image(
+                            painter = painter,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(
+                                    CircleShape
+                                )
+                                .clickable {
+                                    launcher.launch("image/*")
+                                },
+                            contentScale = ContentScale.Crop,
+                            alignment = Alignment.Center
+                        )
+                    }
 
                 }
 
                 Image(
-                    imageVector = Icons.Filled.AddAPhoto,
+                    imageVector = Icons.Filled.Save,
                     contentDescription = null,
                     modifier = Modifier
                         .clip(shape = CircleShape)
@@ -251,7 +270,7 @@ fun ProfileScreen(
             SingleDescriptionItem(
                 icon = Icons.Outlined.Phone,
                 onEditIconClick = {
-                    showNumberDialog.value = true
+//                    showNumberDialog.value = true
                 },
                 label = "${userData?.number}",
                 type = "Phone"

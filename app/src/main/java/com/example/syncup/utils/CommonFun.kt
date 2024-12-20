@@ -42,13 +42,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun navigateTo(navController: NavController, route: String) {
-    navController.navigate(route) {
-        launchSingleTop = true
-        popUpTo(route)
-    }
-}
-
 
 @Composable
 fun LoadingIndicatorSimple(modifier: Modifier = Modifier) {
@@ -83,8 +76,6 @@ fun CustomCircularProgressBar(modifier: Modifier = Modifier) {
             drawArc(
                 brush = Brush.radialGradient(
                     colors = listOf(PurpleAppColor, SkyAppColor),
-//                    start = Offset.Zero,
-//                    end = Offset(size.width, size.height)
                 ),
                 startAngle = angle,
                 sweepAngle = 270f,
@@ -96,72 +87,17 @@ fun CustomCircularProgressBar(modifier: Modifier = Modifier) {
 }
 
 
-fun createOrUpdateProfile(
-    name: String? = null,
-    number: String? = null,
-    imageUrl: String? = null,
-    db: FirebaseFirestore,
-    auth: FirebaseAuth,
-    currentUserData: MutableState<UserData>
-) {
-
-    val currentItemState = MutableStateFlow<ResultState<String>>(ResultState.Idle)
-//    val currentItemState: StateFlow<ResultState<String>> = _currentItemState
-
-    val uid = auth.currentUser?.uid
-
-    val user = UserData(
-        id = uid,
-        name = name ?: currentUserData.value.name,
-        number = number ?: currentUserData.value.number,
-        imageUrl = imageUrl ?: currentUserData.value.imageUrl
-    )
-
-    uid?.let {
-        db.collection("user").document(uid).get().addOnSuccessListener {
-            if (it.exists()) {
-
-                // update here
-                // db.collection("user").document(uid).update()
-
-            } else {
-                db.collection("user").document(uid).set(user)
-                    .addOnCompleteListener {
-                        currentItemState.value = ResultState.Success("Profile created")
-                        getUserById(uid)
-                    }
-                    .addOnFailureListener { exception ->
-                        currentItemState.value = ResultState.Failure(exception)
-                    }
-            }
-        }.addOnFailureListener {
-            currentItemState.value = ResultState.Failure(it)
-        }
-
-    }
-}
-
-fun getUserById(uid: String) {
-
-    val currentUserData = mutableStateOf<UserData?>(null)
-
-    Firebase.firestore.collection("user").document(uid).addSnapshotListener { value, error ->
-        if (value != null) {
-            val user = value.toObject<UserData>()
-            currentUserData.value = user
-        }
-
-        if (error != null) {
-            ResultState.Failure(error) // _signUpState <- assign this failure to
-        }
-    }
-}
-
-
 fun getCurrentTime(date: Long): String {
-    val format = SimpleDateFormat("hh:mm:ss ", Locale.getDefault())
+
+    val format = SimpleDateFormat("hh:mm a", Locale.getDefault())
     format.timeZone = TimeZone.getTimeZone("Asia/Karachi") // Set the time zone to Pakistan
     return format.format(date) // Format the current date and time
+
+}
+
+fun getFormatedDate(date: Long?): String {
+    val format = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+    return format.format(date ?: Date()) // Format the current date and time
 }
 
 @Composable
