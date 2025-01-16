@@ -6,19 +6,15 @@ import com.example.syncup.constants.MESSAGE
 import com.example.syncup.constants.User_Node
 import com.example.syncup.models.ChatData
 import com.example.syncup.models.Message
-import com.example.syncup.models.UserData
+import com.example.syncup.models.UserProfileData
 import com.example.syncup.utils.ResultState
-import com.example.syncup.utils.getCurrentTime
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.toObject
-import com.google.firebase.firestore.toObjects
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,8 +28,8 @@ class SingleChatViewModel @Inject constructor(
     private val _singleChatState = MutableStateFlow<ResultState<String>>(ResultState.Idle)
     val singleChatState: StateFlow<ResultState<String>> = _singleChatState
 
-    private var _currentUserData = MutableStateFlow<UserData?>(null)
-    val currentUserData: StateFlow<UserData?> = _currentUserData
+    private var _currentUserData = MutableStateFlow<UserProfileData?>(null)
+    val currentUserData: StateFlow<UserProfileData?> = _currentUserData
 
     private val _currentChat = MutableStateFlow<ChatData?>(null)
     val currentChat: StateFlow<ChatData?> = _currentChat
@@ -41,7 +37,7 @@ class SingleChatViewModel @Inject constructor(
     private val _messageList = MutableStateFlow<List<Message>>(listOf())
     val messageList: StateFlow<List<Message>> = _messageList
 
-    var currentChatMessageListener: ListenerRegistration? = null
+    private var currentChatMessageListener: ListenerRegistration? = null
 
     init {
         val id = auth.currentUser?.uid
@@ -52,10 +48,10 @@ class SingleChatViewModel @Inject constructor(
 
     private fun getUserById(uid: String) {
 
-        db.collection("user").document(uid).addSnapshotListener { value, error ->
+        db.collection(User_Node).document(uid).addSnapshotListener { value, error ->
 
             if (value != null) {
-                val user = value.toObject<UserData>()
+                val user = value.toObject<UserProfileData>()
                 _currentUserData.value = user
 
             }
@@ -72,14 +68,16 @@ class SingleChatViewModel @Inject constructor(
 
         val time = System.currentTimeMillis()
 
+        val messageRef = db.collection(CHATS).document(chatId).collection(MESSAGE).document()
 
         val msg = Message(
+            id = messageRef.id,
             sendBy = currentUserData.value?.id,
             message = message,
             timeStamp = time,
         )
 
-        db.collection(CHATS).document(chatId).collection(MESSAGE).document().set(msg)
+        messageRef.set(msg)
     }
 
     fun getChatById(chatId: String) {
@@ -97,6 +95,7 @@ class SingleChatViewModel @Inject constructor(
     }
 
     fun populateMessages(chatId: String) {
+
         _singleChatState.value = ResultState.Loading
 
         currentChatMessageListener =
@@ -120,5 +119,36 @@ class SingleChatViewModel @Inject constructor(
         _messageList.value = listOf()
         currentChatMessageListener = null
     }
+
+    fun deleteMessages(chatId: String, messages: List<Message>) {
+
+        _singleChatState.value = ResultState.Loading
+
+        if (messages.isNotEmpty()) {
+
+            messages.forEach { message ->
+
+                db.collection(CHATS)
+                    .document(chatId)
+                    .collection(MESSAGE)
+                    .document(message.id)
+                    .delete()
+                    .addOnCompleteListener {
+                        if (it.isSuccessful) {
+
+                            _singleChatState.value = ResultState.Success("Messages Deleted!")
+                        }
+                    }.addOnFailureListener {
+                        _singleChatState.value = ResultState.Failure(it)
+
+                    }
+
+            }
+
+        }
+
+
+    }
+
 
 }

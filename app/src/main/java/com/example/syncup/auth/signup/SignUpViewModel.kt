@@ -1,13 +1,11 @@
 package com.example.syncup.auth.signup
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.example.syncup.models.UserData
+import com.example.syncup.constants.User_Node
+import com.example.syncup.models.UserProfileData
 import com.example.syncup.utils.ResultState
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.toObject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +25,6 @@ class SignUpViewModel @Inject constructor(
     private val _isUserLogIn: MutableStateFlow<Boolean> = MutableStateFlow<Boolean>(false)
     val isUserSignIn: StateFlow<Boolean> = _isUserLogIn
 
-    private val currentUserData = mutableStateOf<UserData?>(null)
 
     init {
         checkUserLoginStatus()
@@ -50,23 +47,24 @@ class SignUpViewModel @Inject constructor(
                 val user = auth.currentUser?.uid
 //                createOrUpdateProfile(name, number)
 
-                val userProfileData = UserData(
+                val userProfileData = UserProfileData(
                     id = user,
                     name = name,
                     number = number,
+                    email = email,
                     imageUrl = null,
-                    profileBio = "Winners never Quit"
+                    profileBio = "Hey i am synced Up!"
                 )
 
                 user?.let {
-                    db.collection("user").document(user).set(userProfileData)
+                    db.collection(User_Node).document(user).set(userProfileData)
                         .addOnCompleteListener {
                             if (it.isSuccessful) {
                                 _signUpState.value = ResultState.Success("Profile Created")
                             }
                         }.addOnFailureListener {
-                        _signUpState.value = ResultState.Failure(it)
-                    }
+                            _signUpState.value = ResultState.Failure(it)
+                        }
                 }
 
             }
@@ -83,9 +81,11 @@ class SignUpViewModel @Inject constructor(
         _isUserLogIn.value = user != null
     }
 
+    /*
     fun logOut() {
         auth.signOut()
         _isUserLogIn.value = false
     }
+     */
 
 }

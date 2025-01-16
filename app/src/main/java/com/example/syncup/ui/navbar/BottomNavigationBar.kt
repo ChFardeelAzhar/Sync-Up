@@ -33,27 +33,6 @@ data class BottomBarItemData(
 )
 
 
-@Composable
-fun SingleBottomBarItem(
-    item: BottomBarItemData,
-    modifier: Modifier = Modifier,
-    onItemClick: () -> Unit
-) {
-
-    Box(contentAlignment = Alignment.Center, modifier = modifier.padding(5.dp)) {
-        Image(
-            painter = painterResource(id = item.image),
-            contentDescription = null,
-            modifier = modifier
-                .size(50.dp)
-                .padding(8.dp)
-                .clickable {
-                    onItemClick()
-                }
-        )
-    }
-}
-
 
 @Composable
 fun BottomNavigationBar(

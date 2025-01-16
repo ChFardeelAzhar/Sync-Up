@@ -2,7 +2,8 @@ package com.example.syncup.auth.login
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.example.syncup.models.UserData
+import com.example.syncup.constants.User_Node
+import com.example.syncup.models.UserProfileData
 import com.example.syncup.utils.ResultState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,7 +23,7 @@ class LoginViewModel @Inject constructor(
     private var _signInState = MutableStateFlow<ResultState<String>>(ResultState.Idle)
     val signInState: StateFlow<ResultState<String>> = _signInState
 
-    private val currentUserData = mutableStateOf<UserData?>(null)
+    private val currentUserData = mutableStateOf<UserProfileData?>(null)
 
     fun login(
         email: String,
@@ -47,6 +48,7 @@ class LoginViewModel @Inject constructor(
     }
 
 
+    /*
     private fun createOrUpdateProfile(
         name: String? = null,
         number: String? = null,
@@ -54,7 +56,7 @@ class LoginViewModel @Inject constructor(
     ) {
         val uid = auth.currentUser?.uid
 
-        val user = UserData(
+        val user = UserProfileData(
             id = uid,
             name = name ?: currentUserData.value?.name,
             number = number ?: currentUserData.value?.number,
@@ -87,12 +89,15 @@ class LoginViewModel @Inject constructor(
 
     }
 
+
+     */
+
     private fun getUserById(uid: String) {
 
-        db.collection("user").document(uid).addSnapshotListener { value, error ->
+        db.collection(User_Node).document(uid).addSnapshotListener { value, error ->
 
             if (value != null) {
-                val user = value.toObject<UserData>()
+                val user = value.toObject<UserProfileData>()
                 currentUserData.value = user
             }
 

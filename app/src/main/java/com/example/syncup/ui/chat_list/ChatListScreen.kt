@@ -3,15 +3,10 @@ package com.example.syncup.ui.chat_list
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.snapping.SnapPosition
-import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,12 +16,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.EmojiPeople
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -40,27 +32,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil3.compose.AsyncImage
 import com.example.syncup.R
-import com.example.syncup.auth.signup.SignUpViewModel
 import com.example.syncup.models.SingleChatUserDate
 import com.example.syncup.ui.navbar.BottomBarItemData
 import com.example.syncup.ui.navbar.BottomNavigationBar
-import com.example.syncup.ui.profile.ShowDialogForInfoUpdate
 import com.example.syncup.ui.profile.ShowNumberDialog
-import com.example.syncup.ui.theme.PurpleAppColor
 import com.example.syncup.ui.theme.SkyAppColor
 import com.example.syncup.utils.CustomCircularProgressBar
 import com.example.syncup.utils.NavRoutes
@@ -103,7 +90,7 @@ fun ChatListScreen(
                 modifier = Modifier.padding(bottom = 5.dp, end = 7.dp)
             ) {
                 Image(
-                    imageVector = Icons.Filled.Edit,
+                    imageVector = Icons.Filled.Chat,
                     contentDescription = "",
                     colorFilter = ColorFilter.tint(
                         Color.White
@@ -114,6 +101,7 @@ fun ChatListScreen(
         bottomBar = {
 
             val backStackEntry = navController.currentBackStackEntryAsState()
+
             val isHomeSelected =
                 NavRoutes.Destination.ChatListScreen.route == backStackEntry.value?.destination?.route
             val isStatusSelected =
@@ -123,6 +111,7 @@ fun ChatListScreen(
 
 
             val listItems = listOf<BottomBarItemData>(
+
                 BottomBarItemData(
                     title = "Chats",
                     route = NavRoutes.Destination.ChatListScreen.route,
@@ -136,7 +125,7 @@ fun ChatListScreen(
                 BottomBarItemData(
                     title = "Profile",
                     route = NavRoutes.Destination.ProfileScreen.route,
-                    image = if (isProfileSelected) R.drawable.filled_profile else R.drawable.profile
+                    image = if (isProfileSelected) R.drawable.filled_profile else R.drawable.filled_profile
                 ),
             )
 
@@ -196,9 +185,11 @@ fun ChatListScreen(
                     SingleChatUser(
                         user = chatUser
                     ) {
+
                         val route =
                             NavRoutes.Destination.SingleChatScreen.createRoute(chat.id.toString())
                         navController.navigate(route)
+
                     }
 
 
@@ -260,7 +251,7 @@ fun SingleChatUser(
 
         if (user.imageUrl.isNullOrEmpty()) {
             Image(
-                painter = painterResource(R.drawable.profile_bg),
+                painter = painterResource(R.drawable.profile),
                 contentDescription = "",
                 modifier = Modifier
                     .padding(end = 5.dp)
@@ -274,7 +265,7 @@ fun SingleChatUser(
             )
         } else {
             AsyncImage(
-                model = user.imageUrl,
+                model = user.imageUrl, // we will write a function which will give us the image from supabase
                 contentDescription = "",
                 modifier = Modifier
                     .padding(end = 5.dp)

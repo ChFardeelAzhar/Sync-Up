@@ -64,7 +64,7 @@ fun StatusScreen(navController: NavController) {
                 BottomBarItemData(
                     title = "Profile",
                     route = NavRoutes.Destination.ProfileScreen.route,
-                    image = if (isProfileSelected) R.drawable.filled_profile else R.drawable.profile
+                    image = if (isProfileSelected) R.drawable.filled_profile else R.drawable.filled_profile
                 ),
             )
 

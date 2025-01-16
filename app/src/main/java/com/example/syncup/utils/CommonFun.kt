@@ -6,54 +6,27 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import coil3.compose.AsyncImage
-import com.example.syncup.models.UserData
 import com.example.syncup.ui.theme.PurpleAppColor
 import com.example.syncup.ui.theme.SkyAppColor
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
-import kotlinx.coroutines.flow.MutableStateFlow
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-@Composable
-fun LoadingIndicatorSimple(modifier: Modifier = Modifier) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator(
-            color = SkyAppColor
-        )
-    }
-}
 
 @Composable
 fun CustomCircularProgressBar(modifier: Modifier = Modifier) {
@@ -68,10 +41,13 @@ fun CustomCircularProgressBar(modifier: Modifier = Modifier) {
         ), label = ""
     )
 
+
+
     Box(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
         contentAlignment = Alignment.Center
     ) {
+
         Canvas(modifier = Modifier.size(40.dp)) {
             drawArc(
                 brush = Brush.radialGradient(
@@ -83,6 +59,8 @@ fun CustomCircularProgressBar(modifier: Modifier = Modifier) {
                 style = Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round)
             )
         }
+
+
     }
 }
 

@@ -16,8 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -41,6 +46,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,6 +72,7 @@ fun SignUpScreen(
     var number by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
     var showLoadingIndicator by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
@@ -198,13 +206,30 @@ fun SignUpScreen(
                     onNext = {
                         focusManager.moveFocus(FocusDirection.Down)
                     }
-                )
+                ),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible) {
+                        Icons.Default.Visibility // Visible icon
+                    } else {
+                        Icons.Default.VisibilityOff // Hidden icon
+                    }
+
+                    if (password.isNotEmpty()) {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = image, contentDescription = null)
+                        }
+                    }
+                }
+
+
             )
 
             Spacer(modifier = Modifier.size(30.dp))
 
             Button(
                 onClick = {
+
                     if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                         Toast.makeText(
                             context,
@@ -214,12 +239,19 @@ fun SignUpScreen(
                     } else if (password.length < 6) {
                         Toast.makeText(
                             context,
-                            "Password should contain at least 6 words",
+                            "Password should contain at least 6 letters",
                             Toast.LENGTH_SHORT
                         ).show()
                     } else {
-                        signUpViewModel.signUp(name, number, email, password)
+                        signUpViewModel.signUp(
+                            name = name,
+                            number = number,
+                            email = email,
+                            password = password
+                        )
                     }
+
+
                 },
                 enabled = name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && number.isNotEmpty(),
                 modifier = Modifier
@@ -297,7 +329,7 @@ fun SignUpScreen(
     }
 
 
-    if (showLoadingIndicator == true) {
+    if (showLoadingIndicator) {
         CustomCircularProgressBar()
     }
 
@@ -321,7 +353,7 @@ fun TopSection(
             contentDescription = null,
             modifier = Modifier.size(100.dp)
         )
-//        Spacer(modifier = Modifier.height(8.dp))
+
         Text(
             text = title,
             fontWeight = FontWeight.Bold,

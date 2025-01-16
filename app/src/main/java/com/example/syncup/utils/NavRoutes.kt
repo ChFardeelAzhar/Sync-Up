@@ -5,6 +5,7 @@ object NavRoutes {
         data object Login : Destination("login_screen")
         data object SignUp : Destination("signUp_screen")
         data object ChatListScreen : Destination("chatList_screen")
+
         data object SingleChatScreen : Destination("singleChat_screen/{id}") {
             fun createRoute(id: String) = "singleChat_screen/$id"
         }
@@ -15,6 +16,12 @@ object NavRoutes {
         }
 
         data object ProfileScreen : Destination("profile_screen")
+
+        data object UserProfileScreen : Destination("user_profile_screen/{id}") {
+            fun createRoute(id: String) = "user_profile_screen/$id"
+        }
+
+
         data object DetailImageScreen : Destination("image_screen/{image}") {
             fun createImageRoute(image: String) = "image_screen/$image"
         }

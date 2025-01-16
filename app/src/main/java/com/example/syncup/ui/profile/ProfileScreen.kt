@@ -2,16 +2,12 @@ package com.example.syncup.ui.profile
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,30 +15,27 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
-import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,24 +56,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import com.example.syncup.R
-import com.example.syncup.auth.AuthViewModel
-import com.example.syncup.auth.login.LoginScreen
-import com.example.syncup.ui.navbar.BottomBarItemData
-import com.example.syncup.ui.navbar.BottomNavigationBar
 import com.example.syncup.ui.theme.PurpleAppColor
 import com.example.syncup.ui.theme.SkyAppColor
 import com.example.syncup.utils.CustomCircularProgressBar
-import com.example.syncup.utils.NavRoutes
 import com.example.syncup.utils.ResultState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,13 +89,15 @@ fun ProfileScreen(
     val name = remember { mutableStateOf("") }
     val number = remember { mutableStateOf("") }
     var profileBio = remember { mutableStateOf("") }
+
     val showNameDialog = remember { mutableStateOf(false) }
     val showNumberDialog = remember { mutableStateOf(false) }
     val showProfileDialog = remember { mutableStateOf(false) }
+    val showLogOutDialog = remember { mutableStateOf(false) }
 
     LaunchedEffect(userData) {
         name.value = userData?.name ?: ""
-        number.value = userData?.number ?: ""
+        number.value = userData?.number ?: "" // in future we will disable it
         profileBio.value = userData?.profileBio ?: ""
     }
 
@@ -174,7 +159,7 @@ fun ProfileScreen(
                         )
                         .size(150.dp)
                         .clickable {
-
+                            launcher.launch("image/*")
                         },
                 ) {
 
@@ -280,7 +265,9 @@ fun ProfileScreen(
 
             Button(
                 onClick = {
-                    onLogOutClick()
+//                    onLogOutClick()
+                    showLogOutDialog.value = true
+
                 },
                 modifier = Modifier
                     .background(
@@ -358,6 +345,35 @@ fun ProfileScreen(
                 )
             }
         )
+    }
+
+    if (showLogOutDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showLogOutDialog.value = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogOutDialog.value = false
+                        onLogOutClick()
+                    }
+                ) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showLogOutDialog.value = false
+                    }
+                ) {
+                    Text("No")
+                }
+            },
+            title = {
+                Text(text = "Are you sure? want to Logout ?")
+            }
+        )
+
     }
 
 

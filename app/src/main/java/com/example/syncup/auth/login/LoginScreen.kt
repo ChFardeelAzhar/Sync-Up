@@ -15,8 +15,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -39,6 +44,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,6 +70,8 @@ fun LoginScreen(
     var showLoadingIndicator by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
 
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
@@ -138,13 +147,27 @@ fun LoginScreen(
                     onNext = {
                         focusManager.moveFocus(FocusDirection.Down)
                     }
-                )
+                ),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible) {
+                        Icons.Default.Visibility // Visible icon
+                    } else {
+                        Icons.Default.VisibilityOff // Hidden icon
+                    }
+                    if (password.isNotEmpty()){
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = image, contentDescription = null)
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.size(20.dp))
 
             Button(
                 onClick = {
+
                     if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                         Toast.makeText(
                             context,
@@ -154,7 +177,7 @@ fun LoginScreen(
                     } else if (password.length < 6) {
                         Toast.makeText(
                             context,
-                            "Password should contain at least 6 words",
+                            "Password should contain at least 6 letters",
                             Toast.LENGTH_SHORT
                         ).show()
                     } else {
@@ -162,15 +185,17 @@ fun LoginScreen(
                     }
                 },
                 enabled = email.isNotEmpty() && password.isNotEmpty(),
-                modifier = Modifier.background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            SkyAppColor,
-                            PurpleAppColor
-                        )
-                    ),
-                    shape = RoundedCornerShape(35.dp)
-                ).padding(horizontal = 3.dp),
+                modifier = Modifier
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                SkyAppColor,
+                                PurpleAppColor
+                            )
+                        ),
+                        shape = RoundedCornerShape(35.dp)
+                    )
+                    .padding(horizontal = 3.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent
                 )
@@ -227,38 +252,14 @@ fun LoginScreen(
             ResultState.Idle -> {
 
             }
+
         }
-
-        /*
-        when (state.value) {
-            is ResultState.Success -> {
-                Toast.makeText(
-                    context,
-                    (state.value as ResultState.Success<String>).data,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-
-            is ResultState.Failure -> {
-                Toast.makeText(
-                    context,
-                    (state.value as ResultState.Success<String>).data,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-
-            ResultState.Loading -> {
-                showLoadingIndicator = true
-            }
-        }
-
-         */
 
     }
 
 
 
-    if (showLoadingIndicator == true) {
+    if (showLoadingIndicator) {
         CustomCircularProgressBar()
     }
 

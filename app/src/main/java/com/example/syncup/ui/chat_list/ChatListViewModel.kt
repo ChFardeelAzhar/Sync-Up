@@ -7,7 +7,7 @@ import com.example.syncup.constants.CHATS
 import com.example.syncup.constants.User_Node
 import com.example.syncup.models.ChatData
 import com.example.syncup.models.SingleChatUserDate
-import com.example.syncup.models.UserData
+import com.example.syncup.models.UserProfileData
 import com.example.syncup.utils.ResultState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.Filter
@@ -25,26 +25,25 @@ class ChatListViewModel @Inject constructor(
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
-    private var _currentUserData = MutableStateFlow<UserData?>(null)
-    val currentUserData: StateFlow<UserData?> = _currentUserData
 
     private var _chatListState = MutableStateFlow<ResultState<String>>(ResultState.Idle)
     val chatListState: StateFlow<ResultState<String>> = _chatListState
+
+
+    private var _currentUserData = MutableStateFlow<UserProfileData?>(null)
+    val currentUserData: StateFlow<UserProfileData?> = _currentUserData
 
     private var _chats = MutableStateFlow<List<ChatData>>(listOf())
     val chats: StateFlow<List<ChatData>> = _chats
 
 
     init {
-
         val uid = auth.currentUser?.uid
         uid?.let {
             getUserById(it)
         }
 
-
     }
-
 
     fun onAddChat(number: String) {
 
@@ -52,7 +51,10 @@ class ChatListViewModel @Inject constructor(
 
         if (number.isEmpty() or !number.isDigitsOnly()) {
             _chatListState.value = ResultState.Success("Please enter the correct number")
+
         } else {
+
+
             db.collection(CHATS).where(
                 Filter.or(
                     Filter.and(
@@ -69,14 +71,20 @@ class ChatListViewModel @Inject constructor(
                 if (it.isEmpty) {
 
                     db.collection(User_Node).whereEqualTo("number", number).get()
-                        .addOnSuccessListener {
-                            if (it.isEmpty) {
-                                _chatListState.value = ResultState.Success("Invalid Number")
+                        .addOnSuccessListener { user ->
+                            if (user.isEmpty) {
+                                _chatListState.value =
+                                    ResultState.Success("No Chat Available for this number!")
                             } else {
-                                // here now i am ready to creat a chat room
 
-                                val chatPartner = it.toObjects<UserData>()[0]
+                                // here now i am ready to create a chat room
+                                // the chat we get form the db will be return in the form of array
+                                // just because we take our first index of the item
+
+
                                 val id = db.collection(CHATS).document().id
+
+                                val chatPartner = user.toObjects<UserProfileData>()[0]
 
                                 val chat = ChatData(
                                     id = id,
@@ -84,18 +92,23 @@ class ChatListViewModel @Inject constructor(
                                         id = currentUserData.value?.id,
                                         name = currentUserData.value?.name,
                                         number = currentUserData.value?.number,
-                                        imageUrl = currentUserData.value?.imageUrl
+                                        imageUrl = currentUserData.value?.imageUrl,
+                                        email = currentUserData.value?.email,
+                                        profileBio = currentUserData.value?.profileBio,
                                     ),
                                     user2 = SingleChatUserDate(
                                         id = chatPartner.id,
                                         name = chatPartner.name,
                                         number = chatPartner.number,
-                                        imageUrl = chatPartner.imageUrl
+                                        imageUrl = chatPartner.imageUrl,
+                                        email = chatPartner.email,
+                                        profileBio = chatPartner.profileBio,
                                     )
                                 )
 
                                 if (chatPartner.number == currentUserData.value?.number) {
-
+                                    // we will use this section to chat with yourself
+                                    // for yet it will give invalid number if we add the same number
                                     _chatListState.value = ResultState.Success("Invalid Number")
 
                                 } else {
@@ -104,7 +117,7 @@ class ChatListViewModel @Inject constructor(
                                         .addOnCompleteListener {
                                             if (it.isSuccessful) {
                                                 _chatListState.value =
-                                                    ResultState.Success("Chat room created successfully")
+                                                    ResultState.Success("Chat room created successfully / Chat Added")
                                             }
                                         }.addOnFailureListener {
                                             _chatListState.value = ResultState.Failure(it)
@@ -130,10 +143,10 @@ class ChatListViewModel @Inject constructor(
 
     private fun getUserById(uid: String) {
 
-        db.collection("user").document(uid).addSnapshotListener { value, error ->
+        db.collection(User_Node).document(uid).addSnapshotListener { value, error ->
 
             if (value != null) {
-                val user = value.toObject<UserData>()
+                val user = value.toObject<UserProfileData>()
                 _currentUserData.value = user
                 populateChat()
             }

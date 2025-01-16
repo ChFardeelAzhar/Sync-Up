@@ -5,32 +5,26 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.syncup.auth.AuthViewModel
+import com.example.syncup.auth.MainScreenViewModel
 import com.example.syncup.auth.login.LoginScreen
 import com.example.syncup.auth.signup.SignUpScreen
 import com.example.syncup.ui.chat_list.ChatListScreen
-import com.example.syncup.ui.navbar.BottomBarItemData
-import com.example.syncup.ui.navbar.BottomNavigationBar
 import com.example.syncup.ui.profile.ProfileScreen
 import com.example.syncup.ui.single_chat.SingleChatScreen
 import com.example.syncup.ui.single_status.SingleStatusScreen
 import com.example.syncup.ui.status.StatusScreen
 import com.example.syncup.ui.theme.SyncUpTheme
+import com.example.syncup.ui.user_profile.UserProfileScreen
 import com.example.syncup.utils.ImageScreen
 import com.example.syncup.utils.NavRoutes
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,7 +45,7 @@ class MainActivity : ComponentActivity() {
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainApp(viewModel: AuthViewModel = hiltViewModel()) {
+fun MainApp(viewModel: MainScreenViewModel = hiltViewModel()) {
 
     val isUserLogin by viewModel.isUserSignIn.collectAsState()
 
@@ -77,6 +71,7 @@ fun MainApp(viewModel: AuthViewModel = hiltViewModel()) {
             composable(route = NavRoutes.Destination.SignUp.route) {
                 SignUpScreen(navController)
             }
+
             composable(route = NavRoutes.Destination.ProfileScreen.route) {
                 ProfileScreen(navController, onLogOutClick = {
                     viewModel.logOut()
@@ -85,9 +80,23 @@ fun MainApp(viewModel: AuthViewModel = hiltViewModel()) {
                     }
                 })
             }
+
+            composable(route = NavRoutes.Destination.UserProfileScreen.route) {
+
+                val id = it.arguments?.getString("id")
+                id?.let { chatId ->
+                    UserProfileScreen(
+                        navController = navController,
+                        chatId = chatId
+                    )
+                }
+            }
+
+
             composable(route = NavRoutes.Destination.ChatListScreen.route) {
                 ChatListScreen(navController)
             }
+
             composable(route = NavRoutes.Destination.SingleChatScreen.route) {
                 val id = it.arguments?.getString("id")
                 id?.let { newId ->

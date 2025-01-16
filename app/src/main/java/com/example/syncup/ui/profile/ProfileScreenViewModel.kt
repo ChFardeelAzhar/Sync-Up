@@ -4,7 +4,8 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
-import com.example.syncup.models.UserData
+import com.example.syncup.constants.User_Node
+import com.example.syncup.models.UserProfileData
 import com.example.syncup.utils.ResultState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -17,7 +18,6 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Inject
-import javax.xml.transform.Result
 
 @HiltViewModel
 class ProfileScreenViewModel @Inject constructor(
@@ -26,11 +26,11 @@ class ProfileScreenViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-    private val _currentUserData = MutableStateFlow<UserData?>(null)
-    val currentUserData: StateFlow<UserData?> = _currentUserData
-
     private var _profileState = MutableStateFlow<ResultState<String>>(ResultState.Idle)
     val profileState: StateFlow<ResultState<String>> = _profileState
+
+    private val _currentUserData = MutableStateFlow<UserProfileData?>(null)
+    val currentUserData: StateFlow<UserProfileData?> = _currentUserData
 
 
     init {
@@ -53,14 +53,14 @@ class ProfileScreenViewModel @Inject constructor(
 
         val imageRef = imageUrl?.let {
             copyUriToInternalStorage(
-                context,
+                context = context,
                 uri = it.toUri(),
-                "${name}-${System.currentTimeMillis()}.jpg"
+                filename = "${name}-${System.currentTimeMillis()}.jpg"
             )
         }
 
 
-        val user = UserData(
+        val user = UserProfileData(
             id = uid,
             name = name ?: currentUserData.value?.name,
             number = number ?: currentUserData.value?.number,
@@ -78,7 +78,7 @@ class ProfileScreenViewModel @Inject constructor(
             user.imageUrl?.let { map["imageUrl"] = it }
             user.profileBio?.let { map["profileBio"] = it }
 
-            db.collection("user").document(uid).update(map).addOnCompleteListener {
+            db.collection(User_Node).document(uid).update(map).addOnCompleteListener {
                 if (it.isSuccessful) {
                     _profileState.value = ResultState.Success("Profile Updated Successfully")
                 }
@@ -89,17 +89,13 @@ class ProfileScreenViewModel @Inject constructor(
 
     }
 
-//    fun updateProfileWithImage(context: Context, uri: Uri, name: String?, number: String?) {
-//        val imagePath = copyUriToInternalStorage(context, uri, "$name.jpg")
-//        updateProfile(name = name, number = number, imageUrl = imagePath, context)
-//    }
 
     private fun getUserById(uid: String) {
 
-        db.collection("user").document(uid).addSnapshotListener { value, error ->
+        db.collection(User_Node).document(uid).addSnapshotListener { value, error ->
 
             if (value != null) {
-                val user = value.toObject<UserData>()
+                val user = value.toObject<UserProfileData>()
                 _currentUserData.value = user
             }
 
@@ -119,9 +115,9 @@ class ProfileScreenViewModel @Inject constructor(
 
         return try {
             // .use{} is a kotlin function which basic purpose is to close inputStream and OutputStream after the done
-            inputStream?.use { streamInput ->
-                outputStream.use { streamOutput ->
-                    streamInput.copyTo(streamOutput)
+            inputStream?.use { inputUri ->
+                outputStream.use { output ->
+                    inputUri.copyTo(output)
                     _profileState.value = ResultState.Success("Image saved in Internal Storage")
                 }
             }
