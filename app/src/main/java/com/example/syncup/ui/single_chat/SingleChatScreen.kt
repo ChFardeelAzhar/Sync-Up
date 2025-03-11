@@ -16,8 +16,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -141,22 +145,6 @@ fun SingleChatScreen(
 
 
     Scaffold(
-        bottomBar = {
-            BottomAppBar(
-                containerColor = Color.Transparent
-            ) {
-                ReplyBox(
-                    onSendClick = {
-                        viewModel.onSendChat(
-                            chatId = chatId,
-                            message = messageText.value
-                        )
-                        messageText.value = ""
-                    },
-                    messageText = messageText
-                )
-            }
-        },
         modifier = Modifier.fillMaxSize()
     ) {
         Column(
@@ -229,73 +217,60 @@ fun SingleChatScreen(
                 )
             }
 
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize()
+
+            Box(
+                modifier = Modifier
+                    .weight(9f)
+                    .fillMaxWidth()
             ) {
 
-                groupedMessage.forEach { (date, message) ->
-
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-
-                            Text(
-                                text = date,
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    groupedMessage.forEach { (date, message) ->
+                        item {
+                            Row(
                                 modifier = Modifier
-                                    .clip(shape = RoundedCornerShape(8.dp))
-                                    .background(
-                                        color = MaterialTheme.colorScheme.background.copy(
-                                            alpha = 0.5f
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+
+                                Text(
+                                    text = date,
+                                    modifier = Modifier
+                                        .clip(shape = RoundedCornerShape(8.dp))
+                                        .background(
+                                            color = MaterialTheme.colorScheme.background.copy(
+                                                alpha = 0.5f
+                                            )
                                         )
-                                    )
-                                    .padding(5.dp),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-
-                    }
-
-                    items(message) { msg ->
-
-                        val color =
-                            if (msg.sendBy == currentChatId) MaterialTheme.colorScheme.onBackground.copy(
-                                alpha = 0.1f
-                            ) else SkyAppColor
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    if (selectedMessages.contains(msg)) Color.LightGray.copy(alpha = .5f) else Color.Transparent,
-                                    shape = RoundedCornerShape(8.dp)
+                                        .padding(5.dp),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onBackground
                                 )
-                                .padding(1.dp)
-                                .clickable {
-                                    if (isSelectionMode) {
-                                        if (selectedMessages.contains(msg)) {
-                                            selectedMessages.remove(msg)
-                                            if (selectedMessages.isEmpty()) isSelectionMode = false
-                                        } else {
-                                            selectedMessages.add(msg)
-                                        }
-                                    }
-                                }
-                                .padding(
+                            }
 
-                                    start = if (msg.sendBy == currentChatId) 5.dp else 65.dp,
-                                    top = 5.dp,
-                                    bottom = 5.dp,
-                                    end = if (msg.sendBy == currentChatId) 65.dp else 5.dp,
+                        }
+                        items(message) { msg ->
 
+                            val color =
+                                if (msg.sendBy == currentChatId) MaterialTheme.colorScheme.onBackground.copy(
+                                    alpha = 0.1f
+                                ) else SkyAppColor
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        if (selectedMessages.contains(msg)) Color.LightGray.copy(
+                                            alpha = .5f
+                                        ) else Color.Transparent,
+                                        shape = RoundedCornerShape(8.dp)
                                     )
-                                .combinedClickable(
-                                    onClick = {
+                                    .padding(1.dp)
+                                    .clickable {
                                         if (isSelectionMode) {
                                             if (selectedMessages.contains(msg)) {
                                                 selectedMessages.remove(msg)
@@ -305,81 +280,120 @@ fun SingleChatScreen(
                                                 selectedMessages.add(msg)
                                             }
                                         }
-                                    },
-                                    onLongClick = {
-
-                                        isSelectionMode = true
-                                        selectedMessages.add(msg)
-
-
                                     }
-                                ),
-                            horizontalArrangement = if (msg.sendBy == currentChatId) Arrangement.Start else Arrangement.End,
-                            verticalAlignment = Alignment.Top,
-                        ) {
+                                    .padding(
 
-                            if (msg.sendBy == currentChatId) {
+                                        start = if (msg.sendBy == currentChatId) 5.dp else 65.dp,
+                                        top = 5.dp,
+                                        bottom = 5.dp,
+                                        end = if (msg.sendBy == currentChatId) 65.dp else 5.dp,
 
-                                if (imageUrl.isEmpty()) {
-                                    Image(
-                                        painter = painterResource(R.drawable.profile),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .padding(10.dp)
-                                            .clip(shape = CircleShape)
-                                            .size(35.dp),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                } else {
-                                    AsyncImage(
-                                        model = imageUrl,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .padding(10.dp)
-                                            .clip(shape = CircleShape)
-                                            .size(35.dp),
-                                        contentScale = ContentScale.Crop
+                                        )
+                                    .combinedClickable(
+                                        onClick = {
+                                            if (isSelectionMode) {
+                                                if (selectedMessages.contains(msg)) {
+                                                    selectedMessages.remove(msg)
+                                                    if (selectedMessages.isEmpty()) isSelectionMode =
+                                                        false
+                                                } else {
+                                                    selectedMessages.add(msg)
+                                                }
+                                            }
+                                        },
+                                        onLongClick = {
 
-                                    )
+                                            isSelectionMode = true
+                                            selectedMessages.add(msg)
+
+
+                                        }
+                                    ),
+                                horizontalArrangement = if (msg.sendBy == currentChatId) Arrangement.Start else Arrangement.End,
+                                verticalAlignment = Alignment.Top,
+                            ) {
+
+                                if (msg.sendBy == currentChatId) {
+
+                                    if (imageUrl.isEmpty()) {
+                                        Image(
+                                            painter = painterResource(R.drawable.profile),
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .padding(10.dp)
+                                                .clip(shape = CircleShape)
+                                                .size(35.dp),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        AsyncImage(
+                                            model = imageUrl,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .padding(10.dp)
+                                                .clip(shape = CircleShape)
+                                                .size(35.dp),
+                                            contentScale = ContentScale.Crop
+
+                                        )
+                                    }
+
                                 }
 
+                                Column(
+                                    modifier = Modifier
+                                        .wrapContentWidth()
+                                        .clip(shape = RoundedCornerShape(12.dp))
+                                        .background(color = color)
+                                        .padding(
+                                            start = 8.dp,
+                                            top = 8.dp,
+                                            end = 8.dp,
+                                            bottom = 5.dp
+                                        ),
+                                    verticalArrangement = Arrangement.Center,
+
+                                    ) {
+
+                                    Text(
+                                        text = msg.message.toString(),
+                                        color = Color.White,
+                                        textAlign = TextAlign.Start
+                                    )
+
+                                    Text(
+                                        text = getCurrentTime(msg.timeStamp!!),
+                                        color = Color.White.copy(alpha = 0.7f),
+                                        modifier = Modifier.wrapContentWidth(),
+                                        textAlign = TextAlign.End,
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+
+
+                                }
                             }
 
-                            Column(
-                                modifier = Modifier
-                                    .wrapContentWidth()
-                                    .clip(shape = RoundedCornerShape(12.dp))
-                                    .background(color = color)
-                                    .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 5.dp),
-                                verticalArrangement = Arrangement.Center,
 
-                                ) {
-
-                                Text(
-                                    text = msg.message.toString(),
-                                    color = Color.White,
-                                    textAlign = TextAlign.Start
-                                )
-
-                                Text(
-                                    text = getCurrentTime(msg.timeStamp!!),
-                                    color = Color.White.copy(alpha = 0.7f),
-                                    modifier = Modifier.wrapContentWidth(),
-                                    textAlign = TextAlign.End,
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-
-
-                            }
                         }
-
-
                     }
-
                 }
-
-
             }
+
+
+            ReplyBox(
+                onSendClick = {
+                    viewModel.onSendChat(
+                        chatId = chatId,
+                        message = messageText.value
+                    )
+                    messageText.value = ""
+                },
+                messageText = messageText,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
+                    .padding(horizontal = 10.dp)
+            )
 
         }
 
@@ -550,161 +564,18 @@ fun CustomTopBar(
 
 }
 
-
-/*
-@Composable
-fun MessagesBox(messages: List<Message>, currentChatId: String, imageUrl: String) {
-
-    val listState = rememberLazyListState()
-
-    // Scroll to the bottom when the composable is first displayed
-    LaunchedEffect(messages) {
-        listState.scrollToItem(messages.size)
-    }
-
-    val groupedMessage =
-        messages.groupBy { getFormatedDate(it.timeStamp) }
-
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize()
-    ) {
-
-        groupedMessage.forEach { (date, message) ->
-
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-
-                    Text(
-                        text = date,
-                        modifier = Modifier
-                            .clip(shape = RoundedCornerShape(8.dp))
-                            .background(
-                                color = MaterialTheme.colorScheme.background.copy(
-                                    alpha = 0.5f
-                                )
-                            )
-                            .padding(5.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-
-            }
-
-            items(message) { msg ->
-
-                val color =
-                    if (msg.sendBy == currentChatId) MaterialTheme.colorScheme.onBackground.copy(
-                        alpha = 0.1f
-                    ) else SkyAppColor
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-
-                            start = if (msg.sendBy == currentChatId) 5.dp else 65.dp,
-                            top = 5.dp,
-                            bottom = 5.dp,
-                            end = if (msg.sendBy == currentChatId) 65.dp else 5.dp,
-
-                            )
-                        .clickable {
-                            // we will handle on long press here for the showing dialog for the delete
-                            // and update the message
-
-
-                        },
-                    horizontalArrangement = if (msg.sendBy == currentChatId) Arrangement.Start else Arrangement.End,
-                    verticalAlignment = Alignment.Top,
-                ) {
-
-                    if (msg.sendBy == currentChatId) {
-
-                        if (imageUrl.isEmpty()) {
-                            Image(
-                                painter = painterResource(R.drawable.profile),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .padding(10.dp)
-                                    .clip(shape = CircleShape)
-                                    .size(35.dp),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            AsyncImage(
-                                model = imageUrl,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .padding(10.dp)
-                                    .clip(shape = CircleShape)
-                                    .size(35.dp),
-                                contentScale = ContentScale.Crop
-
-                            )
-                        }
-
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .wrapContentWidth()
-                            .clip(shape = RoundedCornerShape(12.dp))
-                            .background(color = color)
-                            .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 5.dp),
-                        verticalArrangement = Arrangement.Center,
-
-                        ) {
-
-                        Text(
-                            text = msg.message.toString(),
-                            color = Color.White,
-                            textAlign = TextAlign.Start
-                        )
-
-                        Text(
-                            text = getCurrentTime(msg.timeStamp!!),
-                            color = Color.White.copy(alpha = 0.7f),
-                            modifier = Modifier.wrapContentWidth(),
-                            textAlign = TextAlign.End,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-
-
-                    }
-                }
-
-
-            }
-
-        }
-
-
-    }
-
-}
-
-
- */
-
-
 @Composable
 fun ReplyBox(
     onSendClick: () -> Unit,
     messageText: MutableState<String>,
+    modifier: Modifier
 ) {
 
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(10.dp),
+            .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Absolute.SpaceBetween
     ) {
@@ -733,7 +604,7 @@ fun ReplyBox(
                         Image(
                             imageVector = Icons.Filled.CameraAlt,
                             contentDescription = null,
-                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(color = SkyAppColor),
+                            colorFilter = ColorFilter.tint(color = SkyAppColor),
                             modifier = Modifier
                                 .padding(horizontal = 5.dp)
                                 .clickable {
@@ -744,7 +615,7 @@ fun ReplyBox(
                         Image(
                             imageVector = Icons.Filled.KeyboardVoice,
                             contentDescription = null,
-                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(color = SkyAppColor),
+                            colorFilter = ColorFilter.tint(color = SkyAppColor),
                             modifier = Modifier
                                 .padding(horizontal = 7.dp)
                                 .clickable {
@@ -760,7 +631,7 @@ fun ReplyBox(
         Image(
             imageVector = Icons.Filled.Send,
             contentDescription = null,
-            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(color = SkyAppColor),
+            colorFilter = ColorFilter.tint(color = SkyAppColor),
             modifier = Modifier
                 .clickable {
                     if (messageText.value.isNotEmpty()) {
