@@ -2,6 +2,7 @@ package com.example.syncup.ui.profile
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -57,14 +58,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import coil3.compose.rememberAsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import com.example.syncup.R
 import com.example.syncup.ui.theme.PurpleAppColor
 import com.example.syncup.ui.theme.SkyAppColor
 import com.example.syncup.utils.CustomCircularProgressBar
 import com.example.syncup.utils.ResultState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -78,14 +82,10 @@ fun ProfileScreen(
 
     val state = viewModel.profileState.collectAsState()
     val userData by viewModel.currentUserData.collectAsState()
-    var currentImageUri by remember { mutableStateOf<Uri?>(null) }
-    val context = LocalContext.current
 
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
-            currentImageUri = uri
-        }
+    val isLoading by viewModel.isLoading.collectAsState()
 
+    var newSelectedImgUri = remember { mutableStateOf<Uri?>(null) }
     val name = remember { mutableStateOf("") }
     val number = remember { mutableStateOf("") }
     var profileBio = remember { mutableStateOf("") }
@@ -95,10 +95,27 @@ fun ProfileScreen(
     val showProfileDialog = remember { mutableStateOf(false) }
     val showLogOutDialog = remember { mutableStateOf(false) }
 
+
+
+    val context = LocalContext.current
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            newSelectedImgUri.value = it
+            viewModel.uploadImageToSupabase(imageUri = it, context = context, name = name.value)
+
+        }
+    }
+
+
+
     LaunchedEffect(userData) {
         name.value = userData?.name ?: ""
         number.value = userData?.number ?: "" // in future we will disable it
         profileBio.value = userData?.profileBio ?: ""
+        newSelectedImgUri.value = userData?.imageUrl?.toUri() ?: newSelectedImgUri.value
     }
 
     Scaffold(
@@ -163,43 +180,41 @@ fun ProfileScreen(
                         },
                 ) {
 
-                    val painter: Painter =
-                        rememberAsyncImagePainter(currentImageUri ?: userData?.imageUrl.toString())
-
-                    if (userData?.imageUrl.isNullOrEmpty()) {
-
-                        Image(
-                            painter = painterResource(R.drawable.profile_bg),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(
-                                    CircleShape
-                                )
-                                .clickable {
-                                    launcher.launch("image/*")
-                                },
-                            contentScale = ContentScale.Crop,
-                            alignment = Alignment.Center
-                        )
-                    } else {
-                        Image(
-                            painter = painter,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(
-                                    CircleShape
-                                )
-                                .clickable {
-                                    launcher.launch("image/*")
-                                },
-                            contentScale = ContentScale.Crop,
-                            alignment = Alignment.Center
-                        )
+                    if (isLoading) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CustomCircularProgressBar(modifier = Modifier.size(20.dp))
+                        }
                     }
 
+                    // val imageModel = selectedImageUri ?: supabaseImageUrl ?: R.drawable.profile_bg
+                    // val painter: Painter = rememberAsyncImagePainter(model = imageModel)
+
+                    val imageModel = newSelectedImgUri.value ?: userData?.imageUrl?.toUri()
+                    val newPainter: Painter = rememberAsyncImagePainter(model = imageModel)
+
+//                    Log.d("FRDL_TEST", "NewProfileImageUrl: $newImageUrl")
+
+                    Image(
+                        painter = newPainter,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(
+                                CircleShape
+                            )
+                            .clickable {
+                                launcher.launch("image/*")
+                            },
+                        contentScale = ContentScale.Crop,
+                        alignment = Alignment.Center
+                    )
+
                 }
+
+
 
                 Image(
                     imageVector = Icons.Filled.Save,
@@ -215,17 +230,16 @@ fun ProfileScreen(
                         )
                         .padding(10.dp)
                         .clickable {
-//                            launcher.launch("image/*")
-                            currentImageUri?.let {
 
-                                viewModel.updateProfile(
-                                    context = context,
-                                    imageUrl = it.toString(),
-                                    name = userData?.name,
-                                    number = userData?.number,
-                                    profileBio = userData?.profileBio
-                                )
-                            }
+                            viewModel.updateProfile(
+                                context = context,
+                                imageUrl = newSelectedImgUri.value.toString(),
+                                name = userData?.name,
+                                number = userData?.number,
+                                profileBio = userData?.profileBio
+                            )
+
+
                         },
                     colorFilter = ColorFilter.tint(Color.White)
                 )

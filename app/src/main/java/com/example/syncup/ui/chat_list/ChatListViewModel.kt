@@ -42,7 +42,6 @@ class ChatListViewModel @Inject constructor(
         uid?.let {
             getUserById(it)
         }
-
     }
 
     fun onAddChat(number: String) {
@@ -54,17 +53,19 @@ class ChatListViewModel @Inject constructor(
 
         } else {
 
-
             db.collection(CHATS).where(
                 Filter.or(
+
                     Filter.and(
                         Filter.equalTo("user1.number", number),
                         Filter.equalTo("user2.number", currentUserData.value?.number)
                     ),
+
                     Filter.and(
                         Filter.equalTo("user1.number", currentUserData.value?.number),
                         Filter.equalTo("user2.number", number)
                     )
+
                 )
             ).get().addOnSuccessListener {
 
@@ -116,8 +117,7 @@ class ChatListViewModel @Inject constructor(
                                     db.collection(CHATS).document(id).set(chat)
                                         .addOnCompleteListener {
                                             if (it.isSuccessful) {
-                                                _chatListState.value =
-                                                    ResultState.Success("Chat room created successfully / Chat Added")
+                                                _chatListState.value = ResultState.Success("Chat Added")
                                             }
                                         }.addOnFailureListener {
                                             _chatListState.value = ResultState.Failure(it)
@@ -169,12 +169,14 @@ class ChatListViewModel @Inject constructor(
                 Filter.equalTo("user2.id", currentUserData.value?.id),
             )
         ).addSnapshotListener { value, error ->
+
             if (value != null) {
 
                 _chats.value = value.documents.mapNotNull {
                     it.toObject<ChatData>()
                 }
                 _chatListState.value = ResultState.Idle
+
 
                 /*
                 val currentChats = value.documents.mapNotNull {
@@ -183,6 +185,8 @@ class ChatListViewModel @Inject constructor(
                 _chats.value = currentChats
                 _chatListState.value = ResultState.Idle
                  */
+
+
             }
 
             if (error != null) {

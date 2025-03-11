@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -43,7 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
 import com.example.syncup.R
 import com.example.syncup.ui.theme.SkyAppColor
 import com.example.syncup.ui.theme.SkyAppColor
@@ -111,7 +112,8 @@ fun UserProfileScreen(
                 modifier = Modifier
                     .size(150.dp)
                     .clip(shape = CircleShape),
-                elevation = CardDefaults.cardElevation(4.dp)
+                elevation = CardDefaults.cardElevation(4.dp),
+
             ) {
 
                 if (chatUser?.imageUrl.isNullOrEmpty()) {
@@ -121,7 +123,7 @@ fun UserProfileScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(shape = CircleShape),
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.FillBounds
                     )
                 } else {
 
@@ -139,6 +141,7 @@ fun UserProfileScreen(
             }
 
 
+            Spacer(modifier = Modifier.size(5.dp))
 
 
             Text(

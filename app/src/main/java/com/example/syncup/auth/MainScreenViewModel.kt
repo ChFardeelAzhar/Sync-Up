@@ -14,8 +14,6 @@ import javax.inject.Inject
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
     private val auth: FirebaseAuth,
-    private val db: FirebaseFirestore
-
 ) : ViewModel() {
 
 

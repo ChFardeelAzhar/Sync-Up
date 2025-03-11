@@ -11,10 +11,10 @@ data class UserProfileData(
 
     fun toMap() = mapOf(
         "id" to id,
-        "name" to id,
-        "number" to id,
+        "name" to name,
+        "number" to number,
         "email" to email,
-        "imageUri" to id,
+        "imageUri" to imageUrl,
         "profileBio" to profileBio
     )
 
@@ -34,7 +34,6 @@ data class SingleChatUserDate(
     val imageUrl: String? = "",
     val email: String? = "",
     val profileBio: String? = "",
-
     )
 
 data class Message(

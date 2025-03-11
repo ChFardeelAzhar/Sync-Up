@@ -37,6 +37,9 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -68,7 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
 import com.example.syncup.R
 import com.example.syncup.models.ChatData
 import com.example.syncup.models.Message
@@ -140,10 +143,7 @@ fun SingleChatScreen(
     Scaffold(
         bottomBar = {
             BottomAppBar(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(0.dp),
-                containerColor = MaterialTheme.colorScheme.background
-
+                containerColor = Color.Transparent
             ) {
                 ReplyBox(
                     onSendClick = {
@@ -156,7 +156,8 @@ fun SingleChatScreen(
                     messageText = messageText
                 )
             }
-        }
+        },
+        modifier = Modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier
@@ -490,39 +491,45 @@ fun CustomTopBar(
             )
 
 
-            if (imageUrl.isEmpty()) {
-                Image(
-                    painter = painterResource(R.drawable.profile),
-                    contentDescription = "",
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .size(45.dp)
-                        .clip(shape = CircleShape)
-                        .clickable {
-                            Toast
-                                .makeText(context, "No Profile Image", Toast.LENGTH_SHORT)
-                                .show()
-                        },
+            Card(
+                modifier = Modifier
+                    .size(45.dp)
+                    .clip(shape = CircleShape),
+                shape = CircleShape,
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                if (imageUrl.isEmpty()) {
+                    Image(
+                        painter = painterResource(R.drawable.profile),
+                        contentDescription = "",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(shape = CircleShape)
+                            .clickable {
+                                Toast
+                                    .makeText(context, "No Profile Image", Toast.LENGTH_SHORT)
+                                    .show()
+                            },
 
 
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .size(40.dp)
-                        .clip(shape = CircleShape)
-                        .clickable {
-                            onImageClick(imageUrl)
-                        },
-                    contentScale = ContentScale.Crop
-                )
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = "",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(shape = CircleShape)
+                            .clickable {
+                                onImageClick(imageUrl)
+                            },
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
 
-
+            Spacer(modifier = Modifier.size(8.dp))
             Text(
                 name,
                 style = MaterialTheme.typography.titleLarge,
@@ -708,7 +715,8 @@ fun ReplyBox(
 
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(9f),
+                .weight(9f)
+                .clip(shape = RoundedCornerShape(50.dp)),
             shape = RoundedCornerShape(50.dp),
             placeholder = {
                 Text("Message")
@@ -769,46 +777,3 @@ fun ReplyBox(
 
 }
 
-
-@Preview(showBackground = true)
-@Composable
-private fun Preview() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Image(
-            imageVector = Icons.Default.ArrowBack,
-            contentDescription = "Back Button",
-            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onBackground),
-            modifier = Modifier
-                .padding(5.dp)
-                .clickable {
-//                isSelectionMode = false
-                }
-        )
-
-        Spacer(Modifier.width(10.dp))
-
-        Text(
-            text = "5 selected ",
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.weight(7f)
-        )
-
-        Image(
-            imageVector = Icons.Outlined.Delete,
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.error),
-            modifier = Modifier
-                .padding(5.dp)
-                .clickable {
-
-
-                }
-        )
-
-
-    }
-}

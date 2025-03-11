@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.EmojiPeople
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
 import com.example.syncup.R
 import com.example.syncup.models.SingleChatUserDate
 import com.example.syncup.ui.navbar.BottomBarItemData
@@ -62,12 +65,12 @@ fun ChatListScreen(
     viewModel: ChatListViewModel = hiltViewModel()
 ) {
 
-    val showAddContactDialog = remember { mutableStateOf(false) }
 
     val state = viewModel.chatListState.collectAsState()
     val chats = viewModel.chats.collectAsState()
     val currentUser = viewModel.currentUserData.collectAsState()
 
+    val showAddContactDialog = remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Scaffold(
@@ -167,7 +170,6 @@ fun ChatListScreen(
             }
 
         } else {
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -249,34 +251,43 @@ fun SingleChatUser(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        if (user.imageUrl.isNullOrEmpty()) {
-            Image(
-                painter = painterResource(R.drawable.profile),
-                contentDescription = "",
-                modifier = Modifier
-                    .padding(end = 5.dp)
-                    .size(50.dp)
-                    .clip(shape = CircleShape)
+        Card(
+            modifier = Modifier
+                .size(50.dp)
+                .clip(shape = CircleShape),
+            shape = CircleShape,
+//            elevation = CardDefaults.cardElevation(4.dp)
+        ) {
+            if (user.imageUrl.isNullOrEmpty()) {
+                Image(
+                    painter = painterResource(R.drawable.profile),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(shape = CircleShape)
 //                    .background(color = MaterialTheme.colorScheme.onBackground, shape = CircleShape)
-                    .clickable {
+                        .clickable {
 
-                    },
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            AsyncImage(
-                model = user.imageUrl, // we will write a function which will give us the image from supabase
-                contentDescription = "",
-                modifier = Modifier
-                    .padding(end = 5.dp)
-                    .size(50.dp)
-                    .clip(shape = CircleShape)
-                    .clickable {
+                        },
+                    contentScale = ContentScale.Fit
+                )
+            } else {
+                AsyncImage(
+                    model = user.imageUrl, // we will write a function which will give us the image from supabase
+                    contentDescription = "",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(shape = CircleShape)
+                        .clickable {
 
-                    },
-                contentScale = ContentScale.Crop
-            )
+                        },
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.size(5.dp))
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()

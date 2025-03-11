@@ -5,6 +5,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.google.gms.google.services)
     kotlin("kapt")
+    kotlin("plugin.serialization") version "2.1.0"
 
 }
 
@@ -78,7 +79,21 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
 
     // coil
-    implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc02")
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // supabase
+
+    implementation(platform("io.github.jan-tennert.supabase:bom:1.4.2"))
+    implementation("io.github.jan-tennert.supabase:supabase-kt:1.4.2") // Main Supabase library
+    implementation("io.github.jan-tennert.supabase:storage-kt:0.9.0")
+
+    implementation("io.ktor:ktor-client-core:2.3.3")        // Core HTTP client
+    implementation("io.ktor:ktor-client-cio:2.3.3")         // CIO engine for HTTP calls
+    implementation("io.ktor:ktor-client-android:2.3.3")
+
+    implementation("io.ktor:ktor-client-plugins:2.3.3")
+
+
 
 }
 
