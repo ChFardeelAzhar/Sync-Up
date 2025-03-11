@@ -107,6 +107,7 @@ class ChatListViewModel @Inject constructor(
                                     )
                                 )
 
+                                /*
                                 if (chatPartner.number == currentUserData.value?.number) {
                                     // we will use this section to chat with yourself
                                     // for yet it will give invalid number if we add the same number
@@ -122,11 +123,21 @@ class ChatListViewModel @Inject constructor(
                                         }.addOnFailureListener {
                                             _chatListState.value = ResultState.Failure(it)
                                         }
-
                                 }
 
-                            }
+                                 */
 
+                                db.collection(CHATS).document(id).set(chat)
+                                    .addOnCompleteListener {
+                                        if (it.isSuccessful) {
+                                            _chatListState.value = ResultState.Success("Chat Added")
+                                        }
+                                    }.addOnFailureListener {
+                                        _chatListState.value = ResultState.Failure(it)
+                                    }
+
+
+                            }
 
                         }.addOnFailureListener {
                             _chatListState.value = ResultState.Failure(it)

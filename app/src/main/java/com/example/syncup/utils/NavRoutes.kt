@@ -1,5 +1,7 @@
 package com.example.syncup.utils
 
+import android.net.Uri
+
 object NavRoutes {
     sealed class Destination(val route: String) {
         data object Login : Destination("login_screen")
@@ -23,7 +25,10 @@ object NavRoutes {
 
 
         data object DetailImageScreen : Destination("image_screen/{image}") {
-            fun createImageRoute(image: String) = "image_screen/$image"
+            fun createImageRoute(image: String) = "image_screen/${Uri.encode(image)}"
         }
+
+
+
     }
 }

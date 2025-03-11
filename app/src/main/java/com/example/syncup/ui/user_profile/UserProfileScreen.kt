@@ -1,6 +1,7 @@
 package com.example.syncup.ui.user_profile
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,6 +49,7 @@ import coil.compose.AsyncImage
 import com.example.syncup.R
 import com.example.syncup.ui.theme.SkyAppColor
 import com.example.syncup.ui.theme.SkyAppColor
+import com.example.syncup.utils.NavRoutes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -114,7 +116,7 @@ fun UserProfileScreen(
                     .clip(shape = CircleShape),
                 elevation = CardDefaults.cardElevation(4.dp),
 
-            ) {
+                ) {
 
                 if (chatUser?.imageUrl.isNullOrEmpty()) {
                     Image(
@@ -133,7 +135,16 @@ fun UserProfileScreen(
                         modifier = Modifier
                             .size(150.dp)
                             .clip(shape = CircleShape)
-                            .padding(5.dp),
+                            .padding(5.dp)
+                            .clickable {
+                                chatUser?.imageUrl?.let {
+                                    navController.navigate(
+                                        NavRoutes.Destination.DetailImageScreen.createImageRoute(
+                                            image = it
+                                        )
+                                    )
+                                }
+                            },
                         contentScale = ContentScale.Crop,
                     )
 

@@ -1,6 +1,7 @@
 package com.example.syncup
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -112,11 +113,14 @@ fun MainApp(viewModel: MainScreenViewModel = hiltViewModel()) {
             }
 
             composable(route = NavRoutes.Destination.DetailImageScreen.route) {
-                val image = it.arguments?.getString("image")
+
+                val image = it.arguments?.getString("image")?.let { Uri.decode(it) }
+
                 image?.let { img ->
                     ImageScreen(img)
                 }
             }
+
         }
 
     }

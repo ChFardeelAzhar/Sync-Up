@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navDeepLink
 import coil.compose.AsyncImage
 import com.example.syncup.R
 import com.example.syncup.models.SingleChatUserDate
@@ -184,16 +185,25 @@ fun ChatListScreen(
                         chat.user1
                     }
 
+//                    SingleChatUser(
+//                        user = chatUser,
+//                    ) {
+//
+//                        val route =
+//                            NavRoutes.Destination.SingleChatScreen.createRoute(chat.id.toString())
+//                        navController.navigate(route)
+//
+//                    }
+
                     SingleChatUser(
-                        user = chatUser
-                    ) {
-
-                        val route =
-                            NavRoutes.Destination.SingleChatScreen.createRoute(chat.id.toString())
-                        navController.navigate(route)
-
-                    }
-
+                        user = chatUser,
+                        onChatClick = {
+                            val route =
+                                NavRoutes.Destination.SingleChatScreen.createRoute(chat.id.toString())
+                            navController.navigate(route)
+                        },
+                        navController = navController
+                    )
 
                 }
 
@@ -238,7 +248,8 @@ fun ChatListScreen(
 @Composable
 fun SingleChatUser(
     user: SingleChatUserDate,
-    onChatClick: () -> Unit
+    onChatClick: () -> Unit,
+    navController: NavController
 ) {
 
     Row(
@@ -265,7 +276,6 @@ fun SingleChatUser(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(shape = CircleShape)
-//                    .background(color = MaterialTheme.colorScheme.onBackground, shape = CircleShape)
                         .clickable {
 
                         },
@@ -273,13 +283,17 @@ fun SingleChatUser(
                 )
             } else {
                 AsyncImage(
-                    model = user.imageUrl, // we will write a function which will give us the image from supabase
+                    model = user.imageUrl,
                     contentDescription = "",
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(shape = CircleShape)
                         .clickable {
-
+                            navController.navigate(
+                                NavRoutes.Destination.DetailImageScreen.createImageRoute(
+                                    user.imageUrl
+                                )
+                            )
                         },
                     contentScale = ContentScale.Crop
                 )

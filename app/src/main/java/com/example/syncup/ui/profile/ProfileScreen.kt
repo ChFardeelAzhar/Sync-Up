@@ -189,13 +189,11 @@ fun ProfileScreen(
                         }
                     }
 
-                    // val imageModel = selectedImageUri ?: supabaseImageUrl ?: R.drawable.profile_bg
-                    // val painter: Painter = rememberAsyncImagePainter(model = imageModel)
 
                     val imageModel = newSelectedImgUri.value ?: userData?.imageUrl?.toUri()
                     val newPainter: Painter = rememberAsyncImagePainter(model = imageModel)
 
-//                    Log.d("FRDL_TEST", "NewProfileImageUrl: $newImageUrl")
+
 
                     Image(
                         painter = newPainter,
@@ -279,7 +277,6 @@ fun ProfileScreen(
 
             Button(
                 onClick = {
-//                    onLogOutClick()
                     showLogOutDialog.value = true
 
                 },
