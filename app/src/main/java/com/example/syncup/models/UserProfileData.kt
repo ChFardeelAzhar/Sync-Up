@@ -34,11 +34,17 @@ data class SingleChatUserDate(
     val imageUrl: String? = "",
     val email: String? = "",
     val profileBio: String? = "",
-    )
+)
 
 data class Message(
     val id: String = "",
     val sendBy: String? = "",
     val message: String? = "",
     val timeStamp: Long? = null
+)
+
+data class Status(
+    val user: SingleChatUserDate = SingleChatUserDate(),
+    val image: String? = "",
+    val time: String? = null
 )
