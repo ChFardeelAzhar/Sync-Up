@@ -267,7 +267,6 @@ fun SingleChatUser(
                 .size(50.dp)
                 .clip(shape = CircleShape),
             shape = CircleShape,
-//            elevation = CardDefaults.cardElevation(4.dp)
         ) {
             if (user.imageUrl.isNullOrEmpty()) {
                 Image(
